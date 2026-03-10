@@ -3,8 +3,10 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-from src.config import BADGE_WIDTH, BADGE_HEIGHT, EVENT_NAME, FONTS_DIR
+from src.config import BADGE_WIDTH, BADGE_HEIGHT, EVENT_NAME, FONTS_DIR, STATIC_DIR
 from src.models import Guest
+
+LOGO_PATH = STATIC_DIR / "images" / "toa-black.png"
 
 logger = logging.getLogger(__name__)
 
@@ -72,10 +74,37 @@ def generate_badge(
     usable_width = width - margin * 2
     event = event_name or EVENT_NAME
 
-    # Event name at top
-    event_font = _get_font(bold=False, size=28)
+    # Logo at top
+    logo_bottom = 40
+    if LOGO_PATH.exists():
+        try:
+            logo = Image.open(LOGO_PATH).convert("RGBA")
+            # Scale logo to fit width with padding
+            logo_max_width = usable_width - 100
+            logo_max_height = 120
+            logo.thumbnail((logo_max_width, logo_max_height), Image.LANCZOS)
+            logo_x = (width - logo.width) // 2
+            logo_y = 30
+            img.paste(logo, (logo_x, logo_y), logo)
+            logo_bottom = logo_y + logo.height + 10
+        except Exception as e:
+            logger.warning(f"Could not load logo for badge: {e}")
+            logo_bottom = 40
+
+    # "Innovate Together" tagline
+    tagline_font = _get_font(bold=True, size=28)
     draw.text(
-        (width // 2, 80),
+        (width // 2, logo_bottom),
+        "Innovate Together",
+        font=tagline_font,
+        fill="#C79100",
+        anchor="mt",
+    )
+
+    # Event name below tagline
+    event_font = _get_font(bold=False, size=24)
+    draw.text(
+        (width // 2, logo_bottom + 36),
         event,
         font=event_font,
         fill="#888888",
@@ -83,7 +112,8 @@ def generate_badge(
     )
 
     # Thin separator line
-    draw.line([(margin, 130), (width - margin, 130)], fill="#cccccc", width=2)
+    separator_y = logo_bottom + 75
+    draw.line([(margin, separator_y), (width - margin, separator_y)], fill="#cccccc", width=2)
 
     # Name (the hero element) — centered vertically
     name_y = height // 2 - 80
