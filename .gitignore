@@ -5,3 +5,4 @@ data/checkin.db
 data/badge_*.png
 .env
 .claude/
+*.csv
