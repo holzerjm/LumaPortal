@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="admin-body">
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 id="admin-title">Check-In Dashboard</h1>
+            <div>
+                <span class="status-dot gray" id="printer-dot"></span>
+                <span id="printer-label">Printer: checking...</span>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">Registered</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-checkedin" style="color: var(--success)">0</div>
+                <div class="stat-label">Checked In</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-remaining" style="color: var(--info)">0</div>
+                <div class="stat-label">Remaining</div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="admin-actions">
+            <button class="btn btn-primary" onclick="document.getElementById('csv-input').click()">Upload CSV</button>
+            <button class="btn btn-secondary" id="btn-sync-luma">Sync from Luma API</button>
+            <button class="btn btn-secondary" id="btn-qr">Generate QR Code</button>
+            <a href="/" class="btn btn-secondary" target="_blank">Open Check-In Page</a>
+        </div>
+
+        <!-- CSV Upload (hidden input) -->
+        <input type="file" id="csv-input" accept=".csv" style="display:none">
+
+        <!-- Upload Drop Area -->
+        <div class="upload-area" id="upload-area">
+            <p>Drag and drop a CSV file here, or click "Upload CSV" above</p>
+            <p class="hint">Accepts Luma guest export CSV files</p>
+        </div>
+
+        <!-- QR Code Display -->
+        <div id="qr-container" style="display:none; text-align:center; margin-bottom:24px;">
+            <img id="qr-image" style="max-width: 300px; border: 1px solid var(--gray-200); border-radius: var(--radius);">
+            <p class="hint" style="margin-top: 8px;">Check-in URL QR code — print and display at venue entrance</p>
+        </div>
+
+        <!-- Guest Table -->
+        <div class="guest-table-container">
+            <div class="table-header">
+                <h3>Guests (<span id="table-count">0</span>)</h3>
+                <input type="text" class="table-search" id="table-search" placeholder="Filter guests...">
+            </div>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Company</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guest-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>

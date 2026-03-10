@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Event Check-In</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Screen 1: Welcome / Search -->
+        <div id="screen-welcome" class="screen active">
+            <div class="event-header">
+                <h1 id="event-name">Event Check-In</h1>
+                <p class="subtitle">Enter your name to check in</p>
+            </div>
+            <div class="search-container">
+                <input
+                    type="text"
+                    id="search-input"
+                    placeholder="Type your name..."
+                    autocomplete="off"
+                    autofocus
+                >
+                <div id="search-results" class="results-list"></div>
+                <div id="no-results" class="no-results hidden">
+                    <p>No matches found</p>
+                    <p class="hint">Please check your spelling or ask event staff for help</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Confirm -->
+        <div id="screen-confirm" class="screen">
+            <div class="confirm-card">
+                <h2>Is this you?</h2>
+                <div class="guest-info">
+                    <p class="guest-name" id="confirm-name"></p>
+                    <p class="guest-detail" id="confirm-company"></p>
+                    <p class="guest-detail secondary" id="confirm-title"></p>
+                </div>
+                <div class="button-group">
+                    <button id="btn-confirm" class="btn btn-primary">Yes, check me in</button>
+                    <button id="btn-back" class="btn btn-secondary">No, go back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Success -->
+        <div id="screen-success" class="screen">
+            <div class="success-card">
+                <div class="checkmark">&#10003;</div>
+                <h2 id="success-message">Welcome!</h2>
+                <p class="printing-msg">Your badge is printing...</p>
+                <div class="auto-return">Returning to check-in in <span id="countdown">5</span>s</div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Already Checked In -->
+        <div id="screen-duplicate" class="screen">
+            <div class="info-card">
+                <div class="info-icon">&#8505;</div>
+                <h2>Already Checked In</h2>
+                <p id="duplicate-message"></p>
+                <div class="button-group">
+                    <button id="btn-reprint" class="btn btn-secondary">Reprint Badge</button>
+                    <button id="btn-dup-back" class="btn btn-secondary">Go Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 5: Not Found -->
+        <div id="screen-notfound" class="screen">
+            <div class="error-card">
+                <div class="error-icon">!</div>
+                <h2>Not Found</h2>
+                <p>We couldn't find your registration.</p>
+                <p class="hint">Please see event staff at the registration desk for assistance.</p>
+                <button id="btn-notfound-back" class="btn btn-secondary">Try Again</button>
+            </div>
+        </div>
+
+        <!-- Loading overlay -->
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Checking in...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+    <script src="/static/js/checkin.js"></script>
+</body>
+</html>
