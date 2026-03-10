@@ -66,7 +66,7 @@ async function loadStats() {
         document.getElementById('stat-checkedin').textContent = data.checked_in;
         document.getElementById('stat-remaining').textContent = data.remaining;
         if (data.event_name) {
-            document.getElementById('admin-title').textContent = 'Innovate Together - Dashboard';
+            document.getElementById('admin-event-name').textContent = data.event_name;
             document.title = 'Innovate Together - Admin';
         }
     } catch (e) {

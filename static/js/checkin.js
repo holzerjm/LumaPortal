@@ -38,7 +38,7 @@ async function loadEventInfo() {
         const resp = await fetch('/api/stats');
         const data = await resp.json();
         if (data.event_name) {
-            document.getElementById('event-name').textContent = 'Innovate Together';
+            document.getElementById('event-name').textContent = data.event_name;
             document.title = 'Innovate Together - Check-In';
         }
     } catch (e) {

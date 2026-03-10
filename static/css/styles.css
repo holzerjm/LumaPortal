@@ -101,7 +101,7 @@ body {
     right: 16px;
     z-index: 50;
     background: var(--bg-card);
-    border: 1px solid var(--border);
+    border: 2px solid var(--gold);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -110,13 +110,26 @@ body {
     justify-content: center;
     cursor: pointer;
     font-size: 18px;
+    color: var(--gold);
     transition: all var(--transition);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 0 8px rgba(255, 198, 0, 0.25);
 }
 
 .theme-toggle:hover {
-    border-color: var(--primary);
     transform: scale(1.1);
+    box-shadow: 0 0 16px rgba(255, 198, 0, 0.4);
+}
+
+[data-theme="light"] .theme-toggle {
+    border-color: var(--border);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="light"] .theme-toggle:hover {
+    border-color: var(--gold-dark);
+    color: var(--gold-dark);
+    box-shadow: var(--shadow);
 }
 
 /* Sun icon hidden in dark mode, moon hidden in light */
@@ -172,8 +185,26 @@ body {
     margin-bottom: 4px;
 }
 
-.event-name-gold {
+.event-name-sub {
+    font-size: 20px;
+    font-weight: 500;
     color: var(--gold);
+    margin-bottom: 4px;
+}
+
+.event-name-sub:empty {
+    display: none;
+}
+
+.admin-event-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gold);
+    margin-top: 2px;
+}
+
+.admin-event-name:empty {
+    display: none;
 }
 
 .subtitle {
