@@ -3,13 +3,16 @@
 ## Setup (one time)
 
 1. Download/copy this entire `LumaPortal` folder to your computer
-2. Double-click **`START.command`** in Finder
-3. If macOS says "cannot be opened because it is from an unidentified developer":
-   - Go to **System Settings > Privacy & Security**
-   - Scroll down and click **"Open Anyway"** next to the blocked message
-   - Or: right-click the file > **Open** > click **Open** in the dialog
+2. **Clear the macOS quarantine** (required for downloaded files):
+   - Open **Terminal** (search "Terminal" in Spotlight)
+   - Run: `xattr -d com.apple.quarantine ~/Downloads/LumaPortal/START.command`
+   - (Adjust the path if you saved the folder somewhere else)
+3. Double-click **`START.command`** in Finder
+4. If macOS still blocks it: right-click the file > **Open** > click **Open** in the dialog
 
 The first run will automatically install everything needed (~1 minute).
+
+See **[USER_GUIDE.md](USER_GUIDE.md)** for detailed setup and event-day instructions.
 
 ## Running the Portal
 

@@ -18,13 +18,19 @@ This guide walks you through setting up and running the event check-in portal. N
 
 ### 1. First-Time Setup (5 minutes)
 
-1. Download the LumaPortal folder to your Mac
-2. Double-click **START.command**
-3. If macOS shows a security warning:
-   - Right-click the file instead > click **Open** > click **Open** in the dialog
+1. Download the LumaPortal folder to your Mac (from GitHub or a zip file)
+2. **Before anything else**, open **Terminal** (search "Terminal" in Spotlight) and run this command — copy and paste it exactly, then press Enter:
+   ```
+   xattr -d com.apple.quarantine ~/Downloads/LumaPortal/START.command
+   ```
+   Adjust the path if you put the folder somewhere other than Downloads (e.g. `~/Desktop/LumaPortal/START.command`). This tells macOS the file is safe to run. You only need to do this once.
+3. Double-click **START.command** in Finder
+4. If macOS still shows a security warning ("cannot be opened"):
+   - Click **Done** (not "Move to Trash")
+   - **Right-click** the file > click **Open** > click **Open** in the dialog
    - Or go to **System Settings > Privacy & Security** and click **Open Anyway**
-4. A Terminal window opens and the system installs what it needs (first time only)
-5. Your browser opens to the admin dashboard automatically
+5. A Terminal window opens and the system installs what it needs (first time only)
+6. Your browser opens to the admin dashboard automatically
 
 ### 2. Export Your Guest List from Luma
 
@@ -169,12 +175,31 @@ If you configured the Luma API key, check-in data is automatically synced back t
 
 ## Troubleshooting
 
-### "Cannot be opened because it is from an unidentified developer"
+### "START.command Not Opened" / "Cannot verify" / "Unidentified developer"
 
-This is a macOS security feature. Fix it:
-1. Right-click `START.command` > click **Open**
-2. In the dialog, click **Open** again
-3. This only needs to be done once
+This is macOS Gatekeeper blocking files downloaded from the internet. Three ways to fix it (try in order):
+
+**Option A — Remove the quarantine flag (recommended):**
+1. Open **Terminal** (search "Terminal" in Spotlight)
+2. Copy and paste this command, then press Enter:
+   ```
+   xattr -d com.apple.quarantine ~/Downloads/LumaPortal/START.command
+   ```
+   (Change the path if your folder is somewhere else, e.g. `~/Desktop/LumaPortal/...`)
+3. Now double-click `START.command` — it should work
+
+**Option B — Right-click to open:**
+1. Click **Done** on the warning dialog (not "Move to Trash")
+2. **Right-click** `START.command` in Finder
+3. Click **Open** from the menu
+4. Click **Open** again in the dialog that appears
+5. This only needs to be done once
+
+**Option C — System Settings:**
+1. Click **Done** on the warning dialog
+2. Go to **System Settings > Privacy & Security**
+3. Scroll down — you'll see a message about `START.command` being blocked
+4. Click **Open Anyway**
 
 ### Server won't start / "Port already in use"
 
