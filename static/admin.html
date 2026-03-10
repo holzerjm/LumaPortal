@@ -38,20 +38,20 @@
             </div>
         </div>
 
-        <!-- Stats -->
+        <!-- Stats (clickable filters) -->
         <div class="stats-bar">
-            <div class="stat-card">
+            <button class="stat-card stat-filter active" data-filter="all" onclick="setStatusFilter('all')">
                 <div class="stat-value" id="stat-total">0</div>
                 <div class="stat-label">Registered</div>
-            </div>
-            <div class="stat-card">
+            </button>
+            <button class="stat-card stat-filter" data-filter="checked_in" onclick="setStatusFilter('checked_in')">
                 <div class="stat-value success" id="stat-checkedin">0</div>
                 <div class="stat-label">Checked In</div>
-            </div>
-            <div class="stat-card">
+            </button>
+            <button class="stat-card stat-filter" data-filter="remaining" onclick="setStatusFilter('remaining')">
                 <div class="stat-value info" id="stat-remaining">0</div>
                 <div class="stat-label">Remaining</div>
-            </div>
+            </button>
         </div>
 
         <!-- Actions -->

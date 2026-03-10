@@ -590,7 +590,25 @@ body.admin-body {
     padding: 20px;
     box-shadow: var(--shadow-sm);
     text-align: center;
-    transition: background var(--transition), border-color var(--transition);
+    transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.stat-filter {
+    cursor: pointer;
+    font-family: inherit;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.stat-filter:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold);
+}
+
+.stat-filter.active {
+    border-color: var(--gold);
+    box-shadow: 0 0 8px rgba(255, 198, 0, 0.3);
 }
 
 .stat-value {

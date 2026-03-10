@@ -1,4 +1,5 @@
 let allGuests = [];
+let activeStatusFilter = 'all';
 
 // Theme toggle
 function initTheme() {
@@ -85,17 +86,41 @@ async function loadGuests() {
     }
 }
 
+function setStatusFilter(filter) {
+    if (activeStatusFilter === filter) {
+        activeStatusFilter = 'all';
+    } else {
+        activeStatusFilter = filter;
+    }
+    document.querySelectorAll('.stat-filter').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === activeStatusFilter);
+    });
+    renderGuestTable(document.getElementById('table-search').value);
+}
+
 function renderGuestTable(filter = '') {
     const tbody = document.getElementById('guest-tbody');
     const lowerFilter = filter.toLowerCase();
 
-    const filtered = filter
-        ? allGuests.filter(g =>
+    let filtered = allGuests;
+
+    // Apply status filter from stat cards
+    if (activeStatusFilter === 'checked_in') {
+        filtered = filtered.filter(g => !!g.checked_in_at);
+    } else if (activeStatusFilter === 'remaining') {
+        filtered = filtered.filter(g => !g.checked_in_at);
+    }
+
+    // Apply text search filter
+    if (filter) {
+        filtered = filtered.filter(g =>
             g.name.toLowerCase().includes(lowerFilter) ||
             (g.company || '').toLowerCase().includes(lowerFilter) ||
             (g.email || '').toLowerCase().includes(lowerFilter)
-        )
-        : allGuests;
+        );
+    }
+
+    document.getElementById('table-count').textContent = filtered.length;
 
     tbody.innerHTML = filtered.map(g => {
         const isCheckedIn = !!g.checked_in_at;
