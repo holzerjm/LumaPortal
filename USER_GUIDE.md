@@ -68,7 +68,7 @@ Instead of manually exporting and uploading CSV files, you can connect directly 
 
 **Step 2 — Get your Event API ID:**
 
-Your event's API ID is in the Luma URL for your event. It looks like `evt-sKdXrUlCLxEZSZg`. You can also find it in the CSV export — it's part of the `qr_code_url` column.
+Your event's API ID is in the Luma URL for your event. It looks like `evt-XXXXXXXXXXXXXXX`. You can also find it in the CSV export — it's part of the `qr_code_url` column.
 
 **Step 3 — Configure the portal:**
 
