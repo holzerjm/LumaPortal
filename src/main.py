@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from src.config import STATIC_DIR, EVENT_NAME, LUMA_API_KEY
+from src.config import STATIC_DIR, EVENT_NAME, LUMA_API_KEY, SYNC_INTERVAL
 from src import database as db
 from src.routes.api import router as api_router, refresh_guest_cache
 from src.routes.admin import router as admin_router
@@ -18,6 +18,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 _sync_task: asyncio.Task | None = None
+_fetch_task: asyncio.Task | None = None
 
 
 async def _background_sync():
@@ -30,6 +31,20 @@ async def _background_sync():
         except Exception as e:
             logger.warning(f"Background sync error: {e}")
         await asyncio.sleep(30)
+
+
+async def _background_fetch():
+    """Background task to fetch latest guest list from Luma API at a configurable interval."""
+    from src.luma_client import fetch_and_store_guests
+
+    while True:
+        await asyncio.sleep(SYNC_INTERVAL)
+        try:
+            count = await fetch_and_store_guests()
+            await refresh_guest_cache()
+            logger.info(f"Auto-sync: refreshed {count} guests from Luma API")
+        except Exception as e:
+            logger.warning(f"Auto-sync fetch error: {e}")
 
 
 @asynccontextmanager
@@ -58,19 +73,23 @@ async def lifespan(app: FastAPI):
         f"{stats['checked_in']} already checked in"
     )
 
-    # Start background sync
+    # Start background tasks
     if LUMA_API_KEY:
         _sync_task = asyncio.create_task(_background_sync())
+        if SYNC_INTERVAL > 0:
+            _fetch_task = asyncio.create_task(_background_fetch())
+            logger.info(f"Auto-sync enabled: fetching guests every {SYNC_INTERVAL}s")
 
     yield
 
     # Shutdown
-    if _sync_task:
-        _sync_task.cancel()
-        try:
-            await _sync_task
-        except asyncio.CancelledError:
-            pass
+    for task in (_sync_task, _fetch_task):
+        if task:
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 app = FastAPI(title="Luma Check-In Portal", lifespan=lifespan)

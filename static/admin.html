@@ -32,9 +32,15 @@
                     <p class="admin-event-name" id="admin-event-name"></p>
                 </div>
             </div>
-            <div class="printer-status">
-                <span class="status-dot gray" id="printer-dot"></span>
-                <span id="printer-label">Printer: checking...</span>
+            <div class="header-status-group">
+                <div class="printer-status">
+                    <span class="status-dot gray" id="printer-dot"></span>
+                    <span id="printer-label">Printer: checking...</span>
+                </div>
+                <div class="sync-status" id="sync-status" style="display:none;">
+                    <span class="status-dot green" id="sync-dot"></span>
+                    <span id="sync-label">Auto-sync: active</span>
+                </div>
             </div>
         </div>
 

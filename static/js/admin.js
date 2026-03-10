@@ -70,6 +70,14 @@ async function loadStats() {
             document.getElementById('admin-event-name').textContent = data.event_name;
             document.title = 'Innovate Together - Admin';
         }
+        // Show auto-sync status
+        const syncEl = document.getElementById('sync-status');
+        if (syncEl && data.auto_sync_enabled) {
+            syncEl.style.display = '';
+            const mins = Math.round(data.sync_interval / 60);
+            document.getElementById('sync-label').textContent =
+                `Auto-sync: every ${mins < 1 ? data.sync_interval + 's' : mins + ' min'}`;
+        }
     } catch (e) {
         console.warn('Stats load failed:', e);
     }

@@ -566,7 +566,15 @@ body.admin-body {
     margin-right: 6px;
 }
 
-.admin-header .printer-status {
+.header-status-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+}
+
+.admin-header .printer-status,
+.admin-header .sync-status {
     color: var(--text-secondary);
     font-size: 14px;
 }

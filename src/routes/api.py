@@ -93,6 +93,8 @@ async def check_in(req: CheckInRequest) -> CheckInResponse:
 @router.get("/stats")
 async def stats():
     s = await db.get_stats()
-    from src.config import EVENT_NAME
+    from src.config import EVENT_NAME, LUMA_API_KEY, SYNC_INTERVAL
     s["event_name"] = EVENT_NAME
+    s["auto_sync_enabled"] = bool(LUMA_API_KEY) and SYNC_INTERVAL > 0
+    s["sync_interval"] = SYNC_INTERVAL
     return s

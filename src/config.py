@@ -32,6 +32,9 @@ ALLOWED_STATUSES = [
     for s in os.getenv("ALLOWED_STATUSES", "approved,pending_approval").split(",")
 ]
 
+# Sync
+SYNC_INTERVAL = int(os.getenv("SYNC_INTERVAL", "300"))  # seconds between auto-fetches from Luma
+
 # Database
 DB_PATH = DATA_DIR / "checkin.db"
 
