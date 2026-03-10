@@ -241,6 +241,17 @@ body {
     color: white;
 }
 
+.btn-danger {
+    background: white;
+    color: var(--error);
+    border: 2px solid var(--error);
+}
+
+.btn-danger:hover {
+    background: var(--error);
+    color: white;
+}
+
 /* Success Screen */
 .success-card {
     background: var(--success-bg);

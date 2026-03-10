@@ -36,6 +36,9 @@ function setupEventListeners() {
     // QR code
     document.getElementById('btn-qr').addEventListener('click', generateQR);
 
+    // Clear data
+    document.getElementById('btn-clear-data').addEventListener('click', clearAllData);
+
     // Table search
     document.getElementById('table-search').addEventListener('input', e => {
         renderGuestTable(e.target.value);
@@ -146,6 +149,28 @@ async function syncLuma() {
         }
     } catch (e) {
         toast('Sync error: ' + e.message, 'error');
+    }
+}
+
+async function clearAllData() {
+    const count = allGuests.length;
+    if (!confirm(`This will permanently delete all ${count} guests and check-in data.\n\nAre you sure?`)) {
+        return;
+    }
+    if (!confirm('This cannot be undone. Clear all data?')) {
+        return;
+    }
+    try {
+        const resp = await fetch('/admin/api/clear-data', { method: 'POST' });
+        if (resp.ok) {
+            toast('All data cleared', 'success');
+            loadStats();
+            loadGuests();
+        } else {
+            toast('Failed to clear data', 'error');
+        }
+    } catch (e) {
+        toast('Error: ' + e.message, 'error');
     }
 }
 
