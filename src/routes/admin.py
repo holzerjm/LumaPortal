@@ -101,10 +101,13 @@ async def printer_status():
 
 @router.post("/sync-luma")
 async def sync_luma():
+    from datetime import datetime, timezone
     from src.luma_client import fetch_and_store_guests
+    import src.main as main_module
     try:
         count = await fetch_and_store_guests()
         await refresh_guest_cache()
+        main_module.last_sync_at = datetime.now(timezone.utc)
         return {"status": "ok", "synced": count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

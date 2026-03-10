@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from datetime import datetime, timezone
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 _sync_task: asyncio.Task | None = None
 _fetch_task: asyncio.Task | None = None
+last_sync_at: datetime | None = None
 
 
 async def _background_sync():
@@ -37,11 +39,13 @@ async def _background_fetch():
     """Background task to fetch latest guest list from Luma API at a configurable interval."""
     from src.luma_client import fetch_and_store_guests
 
+    global last_sync_at
     while True:
         await asyncio.sleep(SYNC_INTERVAL)
         try:
             count = await fetch_and_store_guests()
             await refresh_guest_cache()
+            last_sync_at = datetime.now(timezone.utc)
             logger.info(f"Auto-sync: refreshed {count} guests from Luma API")
         except Exception as e:
             logger.warning(f"Auto-sync fetch error: {e}")
@@ -56,10 +60,12 @@ async def lifespan(app: FastAPI):
     logger.info("Database initialized")
 
     # Try to fetch guests from Luma API on startup
+    global last_sync_at
     if LUMA_API_KEY:
         try:
             from src.luma_client import fetch_and_store_guests
             count = await fetch_and_store_guests()
+            last_sync_at = datetime.now(timezone.utc)
             logger.info(f"Loaded {count} guests from Luma API")
         except Exception as e:
             logger.warning(f"Could not fetch from Luma API: {e}")

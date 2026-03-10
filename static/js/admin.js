@@ -75,8 +75,14 @@ async function loadStats() {
         if (syncEl && data.auto_sync_enabled) {
             syncEl.style.display = '';
             const mins = Math.round(data.sync_interval / 60);
-            document.getElementById('sync-label').textContent =
-                `Auto-sync: every ${mins < 1 ? data.sync_interval + 's' : mins + ' min'}`;
+            let label = `Auto-sync: every ${mins < 1 ? data.sync_interval + 's' : mins + ' min'}`;
+            if (data.last_sync_at) {
+                const ago = Math.round((Date.now() - new Date(data.last_sync_at).getTime()) / 1000);
+                if (ago < 60) label += ` (${ago}s ago)`;
+                else if (ago < 3600) label += ` (${Math.round(ago / 60)}m ago)`;
+                else label += ` (${Math.round(ago / 3600)}h ago)`;
+            }
+            document.getElementById('sync-label').textContent = label;
         }
     } catch (e) {
         console.warn('Stats load failed:', e);

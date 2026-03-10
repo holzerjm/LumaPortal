@@ -97,4 +97,6 @@ async def stats():
     s["event_name"] = EVENT_NAME
     s["auto_sync_enabled"] = bool(LUMA_API_KEY) and SYNC_INTERVAL > 0
     s["sync_interval"] = SYNC_INTERVAL
+    import src.main as main_module
+    s["last_sync_at"] = main_module.last_sync_at.isoformat() if main_module.last_sync_at else None
     return s
