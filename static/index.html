@@ -4,13 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Event Check-In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/styles.css">
+    <script>
+        // Apply saved theme before paint to prevent flash
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
 </head>
 <body>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">&#9728;</span>
+        <span class="icon-moon">&#9790;</span>
+    </button>
+
     <div id="app">
         <!-- Screen 1: Welcome / Search -->
         <div id="screen-welcome" class="screen active">
             <div class="event-header">
+                <img src="/static/images/toa-white.png" alt="The Open Accelerator" class="brand-logo logo-light">
+                <img src="/static/images/toa-black.png" alt="The Open Accelerator" class="brand-logo logo-dark">
                 <h1 id="event-name">Event Check-In</h1>
                 <p class="subtitle">Enter your name to check in</p>
             </div>

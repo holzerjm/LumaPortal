@@ -1,6 +1,19 @@
 let allGuests = [];
 
+// Theme toggle
+function initTheme() {
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     loadStats();
     loadGuests();
     checkPrinter();
@@ -53,8 +66,8 @@ async function loadStats() {
         document.getElementById('stat-checkedin').textContent = data.checked_in;
         document.getElementById('stat-remaining').textContent = data.remaining;
         if (data.event_name) {
-            document.getElementById('admin-title').textContent = data.event_name + ' - Dashboard';
-            document.title = data.event_name + ' - Admin';
+            document.getElementById('admin-title').textContent = 'Innovate Together - Dashboard';
+            document.title = 'Innovate Together - Admin';
         }
     } catch (e) {
         console.warn('Stats load failed:', e);

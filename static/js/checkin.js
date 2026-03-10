@@ -13,8 +13,21 @@ let fuse = null;
 let guests = [];
 let countdownTimer = null;
 
+// Theme toggle
+function initTheme() {
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+    toggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+    });
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+    initTheme();
     await loadEventInfo();
     await loadGuests();
     setupEventListeners();
@@ -25,8 +38,8 @@ async function loadEventInfo() {
         const resp = await fetch('/api/stats');
         const data = await resp.json();
         if (data.event_name) {
-            document.getElementById('event-name').textContent = data.event_name;
-            document.title = data.event_name + ' - Check-In';
+            document.getElementById('event-name').textContent = 'Innovate Together';
+            document.title = 'Innovate Together - Check-In';
         }
     } catch (e) {
         console.warn('Could not load event info:', e);

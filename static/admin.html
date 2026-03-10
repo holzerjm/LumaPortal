@@ -4,13 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/styles.css">
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
 </head>
 <body class="admin-body">
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <span class="icon-sun">&#9728;</span>
+        <span class="icon-moon">&#9790;</span>
+    </button>
+
     <div class="admin-container">
         <div class="admin-header">
-            <h1 id="admin-title">Check-In Dashboard</h1>
-            <div>
+            <div class="admin-header-left">
+                <img src="/static/images/toa-white.png" alt="The Open Accelerator" class="brand-logo logo-light">
+                <img src="/static/images/toa-black.png" alt="The Open Accelerator" class="brand-logo logo-dark">
+                <h1 id="admin-title">Check-In Dashboard</h1>
+            </div>
+            <div class="printer-status">
                 <span class="status-dot gray" id="printer-dot"></span>
                 <span id="printer-label">Printer: checking...</span>
             </div>
@@ -23,11 +42,11 @@
                 <div class="stat-label">Registered</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="stat-checkedin" style="color: var(--success)">0</div>
+                <div class="stat-value success" id="stat-checkedin">0</div>
                 <div class="stat-label">Checked In</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="stat-remaining" style="color: var(--info)">0</div>
+                <div class="stat-value info" id="stat-remaining">0</div>
                 <div class="stat-label">Remaining</div>
             </div>
         </div>
@@ -52,7 +71,7 @@
 
         <!-- QR Code Display -->
         <div id="qr-container" style="display:none; text-align:center; margin-bottom:24px;">
-            <img id="qr-image" style="max-width: 300px; border: 1px solid var(--gray-200); border-radius: var(--radius);">
+            <img id="qr-image" style="max-width: 300px; border: 1px solid var(--border); border-radius: var(--radius);">
             <p class="hint" style="margin-top: 8px;">Check-in URL QR code — print and display at venue entrance</p>
         </div>
 
