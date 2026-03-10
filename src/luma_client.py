@@ -47,25 +47,35 @@ async def fetch_guests(event_api_id: str = "") -> list[Guest]:
                 user_data = entry.get("user", {})
 
                 # Extract registration answers for company/title
-                reg_answers = guest_data.get("registration_answers", {})
+                reg_answers = guest_data.get("registration_answers", [])
                 company = ""
                 job_title = ""
-                for question, answer in reg_answers.items():
-                    q_lower = question.lower()
-                    if "company" in q_lower or "university" in q_lower:
-                        company = str(answer) if answer else ""
-                    elif "job title" in q_lower:
-                        job_title = str(answer) if answer else ""
+                for qa in reg_answers:
+                    if qa.get("question_type") == "company":
+                        company = qa.get("answer_company", "") or ""
+                        job_title = qa.get("answer_job_title", "") or ""
+                        break
+                # Fallback: search by label text
+                if not company and not job_title:
+                    for qa in reg_answers:
+                        label = (qa.get("label") or "").lower()
+                        if "company" in label or "university" in label:
+                            answer = qa.get("answer", "")
+                            company = str(answer) if answer else ""
+                        elif "job title" in label:
+                            answer = qa.get("answer", "")
+                            job_title = str(answer) if answer else ""
 
                 guests.append(
                     Guest(
                         api_id=guest_data.get("api_id", ""),
                         name=guest_data.get("name", "")
-                        or f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip(),
-                        first_name=user_data.get("first_name", ""),
-                        last_name=user_data.get("last_name", ""),
-                        email=user_data.get("email", ""),
-                        phone=user_data.get("phone_number", ""),
+                        or guest_data.get("user_name", "")
+                        or f"{guest_data.get('user_first_name', '')} {guest_data.get('user_last_name', '')}".strip(),
+                        first_name=guest_data.get("user_first_name", "") or user_data.get("first_name", ""),
+                        last_name=guest_data.get("user_last_name", "") or user_data.get("last_name", ""),
+                        email=guest_data.get("email", "") or guest_data.get("user_email", "") or user_data.get("email", ""),
+                        phone=guest_data.get("phone_number", "") or user_data.get("phone_number", ""),
                         company=company,
                         job_title=job_title,
                         ticket_type=guest_data.get("ticket_type_name", ""),
