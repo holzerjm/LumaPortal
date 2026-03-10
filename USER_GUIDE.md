@@ -91,14 +91,92 @@ Your event's API ID is in the Luma URL for your event. It looks like `evt-XXXXXX
 
 **If you don't set up the API**, everything still works — you just need to export and upload CSV files manually from Luma before your event.
 
-### 5. Connect the Printer (Optional)
+### 5. Set Up the Badge Printer (Optional)
 
-1. Plug the Brother QL printer into your laptop via USB
-2. Load a roll of labels (DK-11202 recommended)
-3. The admin dashboard should show **"Printer: Connected"** in the top right
-4. If it still says "Not connected", try unplugging and re-plugging the USB cable
+If you don't have a printer, everything still works — check-ins proceed normally and badge images are saved as PNG files in the `data/` folder so you can print them later from any printer.
 
-If you don't have a printer, the system still works — it just skips the badge printing step. Badge images are saved in the `data/` folder if you need to print them later.
+#### What You Need to Buy
+
+- **Printer**: Brother QL-820NWB (recommended) — about $170 on Amazon
+  - Other compatible models: QL-800, QL-810W, QL-1100, QL-1110NWB
+- **Labels**: Brother DK-11202 shipping labels (62mm x 100mm) — about $15 for a roll of 300
+  - These are the white rectangular labels, not the continuous tape
+- **Cable**: USB-A to USB-B cable (the square-shaped connector, like an older printer cable)
+  - The QL-820NWB also supports Wi-Fi, but USB is more reliable for events
+
+#### Unboxing and Loading Labels
+
+1. **Unbox the printer** — remove all tape and packaging materials
+2. **Open the label compartment** — lift the cover on the top/front of the printer
+3. **Insert the label roll:**
+   - Hold the roll so the labels feed from the bottom (the label surface faces up)
+   - Place the roll into the compartment — it sits in the guides on each side
+   - Pull the end of the label strip out through the front slot
+   - Feed it past the cutter opening so a few inches stick out
+4. **Close the cover** — press down until it clicks shut
+5. **Plug in the power cable** and turn the printer on (power button on the back or side)
+6. **Press the feed button** (on the front of the printer) once — it should pull the label through and cut it. If this works, your labels are loaded correctly
+
+#### Connecting to Your Mac
+
+1. **Plug the USB cable** from the printer into your Mac
+   - If your Mac only has USB-C ports, you'll need a USB-C to USB-A adapter (or a USB-C to USB-B cable)
+2. **macOS may show a pop-up** asking to allow the accessory to connect — click **Allow**
+3. You do **not** need to install any printer drivers — the portal talks directly to the printer over USB
+
+#### Verifying the Connection
+
+1. Start the portal (double-click `START.command`)
+2. Open the admin dashboard
+3. Look at the **top right** of the dashboard:
+   - **"Printer: Connected"** (green dot) = ready to print
+   - **"Printer: Not connected"** (red dot) = see troubleshooting below
+
+#### If You Have a Different Printer Model
+
+The default setting is for the QL-820NWB. If you bought a different Brother QL model:
+
+1. Open the `.env` file in TextEdit (press **Cmd+Shift+.** in Finder to show hidden files)
+2. Change the `PRINTER_MODEL` line to match your printer:
+   ```
+   PRINTER_MODEL="QL-800"
+   ```
+   Common values: `QL-800`, `QL-810W`, `QL-820NWB`, `QL-1100`, `QL-1110NWB`
+3. If you're using different label sizes, also change:
+   ```
+   LABEL_SIZE="62x100"
+   ```
+   The `62x100` setting works with DK-11202 labels. For other labels, see the size printed on the label box (e.g. `62` for continuous 62mm tape, `29x90` for address labels)
+4. Save the file and restart the server
+
+#### Testing a Badge Print
+
+1. Make sure at least one guest is loaded (upload a CSV or sync from Luma)
+2. In the admin dashboard guest table, click **Check In** next to any guest
+3. A badge should print within a few seconds
+4. If it doesn't print, click **Reprint** to try again
+5. Check the admin dashboard for the printer status indicator
+
+#### Printer Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| "Printer: Not connected" | Unplug the USB cable, wait 5 seconds, plug it back in. Check that the printer is powered on. |
+| macOS asks about an accessory | Click **Allow** to let the printer connect |
+| Badge prints but is blank | The labels may be loaded upside down — open the cover and flip the roll |
+| Badge prints but is cut off | Check that `LABEL_SIZE` in `.env` matches your actual labels (should be `62x100` for DK-11202) |
+| "Print failed" error in dashboard | Try the **Reprint** button. If it still fails, check that no label is jammed in the cutter |
+| Labels are jamming | Open the cover, gently pull out any stuck label, close the cover, and press the feed button |
+| Printer works but badges look small | Make sure `PRINTER_MODEL` in `.env` matches your actual printer model |
+| Nothing happens at all | The badge is saved as a PNG in the `data/` folder — you can print it manually from any printer |
+
+#### No Printer? No Problem
+
+Without a printer connected, the portal:
+- Still checks in guests normally
+- Shows the success screen to attendees
+- Saves badge images as PNG files in the `data/` folder inside LumaPortal
+- Files are named `badge_gst-XXXXX.png` — you can print them later from any computer and printer
 
 ### 6. Print the QR Code Poster
 
@@ -258,14 +336,7 @@ Make sure:
 
 ### Printer not printing
 
-1. Check the admin dashboard — does it say "Printer: Connected"?
-2. Try unplugging and re-plugging the USB cable
-3. Make sure labels are loaded in the printer
-4. Try the **Reprint** button in the admin dashboard for a specific guest
-
-### Badge images look wrong
-
-If names are cut off or text is too small, this may happen with very long names. The system automatically shrinks text to fit, but extremely long names may wrap to two lines.
+See the detailed **Printer Troubleshooting** table in Section 5 above. The most common fix is unplugging and re-plugging the USB cable.
 
 ### Need to undo a check-in
 
