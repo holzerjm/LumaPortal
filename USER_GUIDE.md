@@ -49,7 +49,49 @@ This guide walks you through setting up and running the event check-in portal. N
 
 You can re-upload the CSV at any time to update the list (new registrations, etc.). Existing check-in data is preserved.
 
-### 4. Connect the Printer (Optional)
+### 4. Set Up Luma API Integration (Optional)
+
+Instead of manually exporting and uploading CSV files, you can connect directly to the Luma API to pull your guest list automatically and sync check-ins back to Luma in real time.
+
+**Prerequisites:**
+- You need a **Luma Plus** subscription (the API is not available on free plans)
+- The API key is tied to a specific **calendar**, not a single event — so it works for all events under that calendar
+
+**Step 1 — Get your API key:**
+
+1. Log in to [lu.ma](https://lu.ma)
+2. Go to your **Calendar** page (the calendar that contains your event)
+3. Click **Settings** (gear icon)
+4. Go to the **API Keys** section — or navigate directly to [luma.com/calendar/manage/api-keys](https://luma.com/calendar/manage/api-keys)
+5. Click **Create API Key**
+6. Copy the key — you'll only see it once, so save it somewhere safe
+
+**Step 2 — Get your Event API ID:**
+
+Your event's API ID is in the Luma URL for your event. It looks like `evt-sKdXrUlCLxEZSZg`. You can also find it in the CSV export — it's part of the `qr_code_url` column.
+
+**Step 3 — Configure the portal:**
+
+1. Open the `.env` file in the LumaPortal folder using TextEdit
+   - If you don't see it in Finder, press **Cmd+Shift+.** to show hidden files
+2. Fill in these two values:
+   ```
+   LUMA_API_KEY=your-api-key-here
+   EVENT_API_ID=evt-your-event-id-here
+   ```
+3. Save the file and restart the server (close Terminal, double-click START.command again)
+
+**What happens when the API is configured:**
+- On startup, the portal automatically fetches the full guest list from Luma
+- You can also click **"Sync from Luma API"** on the admin dashboard at any time to pull the latest registrations
+- When someone checks in, the portal syncs their check-in status back to Luma every 30 seconds
+- You can still upload a CSV as a backup — both data sources work together
+
+**Security note:** Your API key gives full access to your Luma calendar. Never share it publicly or post it online. The `.env` file is already excluded from git, so it won't be accidentally uploaded to GitHub.
+
+**If you don't set up the API**, everything still works — you just need to export and upload CSV files manually from Luma before your event.
+
+### 5. Connect the Printer (Optional)
 
 1. Plug the Brother QL printer into your laptop via USB
 2. Load a roll of labels (DK-11202 recommended)
@@ -58,7 +100,7 @@ You can re-upload the CSV at any time to update the list (new registrations, etc
 
 If you don't have a printer, the system still works — it just skips the badge printing step. Badge images are saved in the `data/` folder if you need to print them later.
 
-### 5. Print the QR Code Poster
+### 6. Print the QR Code Poster
 
 1. In the admin dashboard, click **Generate QR Code**
 2. A QR code appears on the page
@@ -68,7 +110,7 @@ If you don't have a printer, the system still works — it just skips the badge 
 
 The QR code links to your check-in page. When attendees scan it, the check-in page opens on their phone.
 
-### 6. Test the Flow
+### 7. Test the Flow
 
 Before the event, do a test run:
 
