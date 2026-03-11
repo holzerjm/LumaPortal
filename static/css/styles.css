@@ -148,6 +148,16 @@ body {
     margin-bottom: 8px;
 }
 
+/* Check-in page: 2× logo */
+.brand-logo.brand-logo-large {
+    height: 96px;
+}
+
+/* Admin page: 2× logo */
+.brand-logo.brand-logo-admin {
+    height: 72px;
+}
+
 .brand-logo.logo-dark { display: none; }
 .brand-logo.logo-light { display: inline-block; }
 [data-theme="light"] .brand-logo.logo-dark { display: inline-block; }
@@ -178,6 +188,22 @@ body {
     padding: 32px 0 24px;
 }
 
+.event-header .portal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.event-header .tagline {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
 .event-header h1 {
     font-size: 28px;
     font-weight: 700;
@@ -197,7 +223,7 @@ body {
 }
 
 .admin-event-name {
-    font-size: 14px;
+    font-size: 21px;
     font-weight: 500;
     color: var(--gold);
     margin-top: 2px;
@@ -549,12 +575,18 @@ body.admin-body {
 }
 
 .admin-header-left .brand-logo {
-    height: 36px;
+    height: 72px;
     margin-bottom: 0;
 }
 
 .admin-header h1 {
     font-size: 24px;
+    color: var(--text);
+}
+
+.admin-tagline {
+    font-size: 36px;
+    font-weight: 700;
     color: var(--text);
 }
 
@@ -829,5 +861,9 @@ tr:hover td {
         padding: 32px 24px;
     }
     .brand-logo { height: 36px; }
+    .brand-logo.brand-logo-large { height: 72px; }
+    .brand-logo.brand-logo-admin { height: 48px; }
+    .admin-tagline { font-size: 24px; }
+    .admin-event-name { font-size: 16px; }
     .theme-toggle { top: 12px; right: 12px; width: 36px; height: 36px; font-size: 16px; }
 }
