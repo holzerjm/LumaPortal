@@ -19,7 +19,7 @@ LUMA_API_BASE = "https://public-api.luma.com/v1"
 
 # Printer
 PRINTER_MODEL = os.getenv("PRINTER_MODEL", "QL-820NWB")
-LABEL_SIZE = os.getenv("LABEL_SIZE", "62x100")
+LABEL_SIZE = os.getenv("LABEL_SIZE", "62red")
 PRINTER_URI = os.getenv("PRINTER_URI", "")
 
 # Server
@@ -38,6 +38,6 @@ SYNC_INTERVAL = int(os.getenv("SYNC_INTERVAL", "300"))  # seconds between auto-f
 # Database
 DB_PATH = DATA_DIR / "checkin.db"
 
-# Badge dimensions (62mm x 100mm at 300 DPI)
-BADGE_WIDTH = 732
-BADGE_HEIGHT = 1182
+# Badge dimensions (62mm x 100mm printable area as expected by brother_ql)
+BADGE_WIDTH = 696
+BADGE_HEIGHT = 1109
