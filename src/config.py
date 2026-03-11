@@ -38,6 +38,7 @@ SYNC_INTERVAL = int(os.getenv("SYNC_INTERVAL", "300"))  # seconds between auto-f
 # Database
 DB_PATH = DATA_DIR / "checkin.db"
 
-# Badge dimensions (62mm x 100mm printable area as expected by brother_ql)
-BADGE_WIDTH = 696
-BADGE_HEIGHT = 1109
+# Badge dimensions — landscape: 100mm × 62mm at 300 DPI.
+# Generated as 1182×696 (landscape), brother_ql rotate="auto" rotates to fit roll.
+BADGE_WIDTH = 1182
+BADGE_HEIGHT = 696

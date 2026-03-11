@@ -22,40 +22,34 @@ def _get_font(bold: bool = False, size: int = 36) -> ImageFont.FreeTypeFont:
         path = FONTS_DIR / name
         if path.exists():
             return ImageFont.truetype(str(path), size)
-    # Fallback to Pillow's default
     try:
         return ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", size)
     except OSError:
         return ImageFont.load_default(size=size)
 
 
-def _auto_size_text(
+def _fit_text(
     draw: ImageDraw.ImageDraw,
     text: str,
     max_width: int,
     bold: bool,
     start_size: int,
-    min_size: int = 18,
+    min_size: int = 24,
 ) -> tuple[ImageFont.FreeTypeFont, list[str]]:
-    """Find the largest font size that fits text within max_width. Returns font and wrapped lines."""
+    """Find the largest font size that fits within max_width."""
     size = start_size
     while size >= min_size:
         font = _get_font(bold=bold, size=size)
         bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        if text_width <= max_width:
+        if (bbox[2] - bbox[0]) <= max_width:
             return font, [text]
         size -= 2
 
-    # At min size, try wrapping to two lines
     font = _get_font(bold=bold, size=min_size)
     words = text.split()
     if len(words) >= 2:
         mid = len(words) // 2
-        line1 = " ".join(words[:mid])
-        line2 = " ".join(words[mid:])
-        return font, [line1, line2]
-
+        return font, [" ".join(words[:mid]), " ".join(words[mid:])]
     return font, [text]
 
 
@@ -65,104 +59,94 @@ def generate_badge(
     job_title: str = "",
     event_name: str = "",
 ) -> Image.Image:
-    """Generate a badge image for thermal printing."""
+    """Generate a landscape badge (100mm × 62mm) for the Brother QL continuous roll."""
     width, height = BADGE_WIDTH, BADGE_HEIGHT
     img = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(img)
 
-    margin = 50
+    margin = 40
     usable_width = width - margin * 2
     event = event_name or EVENT_NAME
+    cx = width // 2  # center x
 
-    # Logo at top
-    logo_bottom = 40
+    # ── Centered logo ──
+    logo_bottom = 30
     if LOGO_PATH.exists():
         try:
             logo = Image.open(LOGO_PATH).convert("RGBA")
-            # Scale logo to fit width with padding
-            logo_max_width = usable_width - 100
-            logo_max_height = 120
-            logo.thumbnail((logo_max_width, logo_max_height), Image.LANCZOS)
-            logo_x = (width - logo.width) // 2
-            logo_y = 30
+            logo.thumbnail((480, 240), Image.LANCZOS)
+            logo_x = cx - logo.width // 2
+            logo_y = 25
             img.paste(logo, (logo_x, logo_y), logo)
-            logo_bottom = logo_y + logo.height + 10
+            logo_bottom = logo_y + logo.height + 8
         except Exception as e:
             logger.warning(f"Could not load logo for badge: {e}")
-            logo_bottom = 40
 
-    # "Innovate Together" tagline
-    tagline_font = _get_font(bold=True, size=28)
-    draw.text(
-        (width // 2, logo_bottom),
-        "Innovate Together",
-        font=tagline_font,
-        fill="#C79100",
-        anchor="mt",
+    # "Innovate Together" centered under logo
+    tagline_font = _get_font(bold=True, size=32)
+    draw.text((cx, logo_bottom), "Innovate Together", font=tagline_font, fill="#C79100", anchor="mt")
+
+    # Event name under tagline
+    event_font = _get_font(bold=False, size=26)
+    draw.text((cx, logo_bottom + 40), event, font=event_font, fill="#888888", anchor="mt")
+
+    # Separator
+    sep_y = logo_bottom + 80
+    draw.line([(margin, sep_y), (width - margin, sep_y)], fill="#cccccc", width=2)
+
+    # ── Name — big and centered ──
+    content_top = sep_y + 15
+    content_bottom = height - 45
+    content_mid_y = (content_top + content_bottom) // 2
+
+    name_font, name_lines = _fit_text(
+        draw, name, usable_width, bold=True, start_size=180, min_size=60
     )
+    line_h = name_font.size + 12
+    total_name_h = len(name_lines) * line_h
 
-    # Event name below tagline
-    event_font = _get_font(bold=False, size=24)
-    draw.text(
-        (width // 2, logo_bottom + 36),
-        event,
-        font=event_font,
-        fill="#888888",
-        anchor="mt",
-    )
+    # Detail heights
+    detail_h = 0
+    if company:
+        detail_h += 50
+    if job_title:
+        detail_h += 42
+    gap = 18 if detail_h else 0
+    total_block = total_name_h + gap + detail_h
+    block_top = content_mid_y - total_block // 2
 
-    # Thin separator line
-    separator_y = logo_bottom + 75
-    draw.line([(margin, separator_y), (width - margin, separator_y)], fill="#cccccc", width=2)
-
-    # Name (the hero element) — centered vertically
-    name_y = height // 2 - 80
-    name_font, name_lines = _auto_size_text(
-        draw, name, usable_width, bold=True, start_size=72, min_size=32
-    )
-    line_height = name_font.size + 8
     for i, line in enumerate(name_lines):
         draw.text(
-            (width // 2, name_y + i * line_height),
+            (cx, block_top + i * line_h),
             line,
             font=name_font,
             fill="black",
             anchor="mt",
         )
 
-    # Company below name
-    detail_y = name_y + len(name_lines) * line_height + 30
+    # Company
+    detail_y = block_top + total_name_h + gap
     if company:
-        company_font, company_lines = _auto_size_text(
-            draw, company, usable_width, bold=False, start_size=36, min_size=20
+        company_font, company_lines = _fit_text(
+            draw, company, usable_width, bold=False, start_size=42, min_size=24
         )
         for i, line in enumerate(company_lines):
             draw.text(
-                (width // 2, detail_y + i * (company_font.size + 4)),
+                (cx, detail_y + i * (company_font.size + 6)),
                 line,
                 font=company_font,
                 fill="#444444",
                 anchor="mt",
             )
-        detail_y += len(company_lines) * (company_font.size + 4) + 10
+        detail_y += len(company_lines) * (company_font.size + 6) + 6
 
     # Job title
     if job_title:
-        title_font = _get_font(bold=False, size=28)
-        draw.text(
-            (width // 2, detail_y),
-            job_title,
-            font=title_font,
-            fill="#666666",
-            anchor="mt",
-        )
+        title_font = _get_font(bold=False, size=34)
+        draw.text((cx, detail_y), job_title, font=title_font, fill="#666666", anchor="mt")
 
-    # Bottom border line
-    draw.line(
-        [(margin, height - 60), (width - margin, height - 60)],
-        fill="#cccccc",
-        width=2,
-    )
+    # Bottom border
+    draw.line([(margin, height - 25), (width - margin, height - 25)], fill="#cccccc", width=2)
 
     return img
 

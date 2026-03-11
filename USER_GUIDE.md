@@ -83,8 +83,10 @@ Your event's API ID is in the Luma URL for your event. It looks like `evt-XXXXXX
 
 **What happens when the API is configured:**
 - On startup, the portal automatically fetches the full guest list from Luma
-- You can also click **"Sync from Luma API"** on the admin dashboard at any time to pull the latest registrations
+- **Auto-sync** runs in the background every 5 minutes (configurable via `SYNC_INTERVAL` in `.env`) to pick up new registrations — no manual action needed
+- You can also click **"Sync from Luma API"** on the admin dashboard at any time for an immediate refresh
 - When someone checks in, the portal syncs their check-in status back to Luma every 30 seconds
+- The admin dashboard shows the last sync time and auto-sync status
 - You can still upload a CSV as a backup — both data sources work together
 
 **Security note:** Your API key gives full access to your Luma calendar. Never share it publicly or post it online. The `.env` file is already excluded from git, so it won't be accidentally uploaded to GitHub.
@@ -99,8 +101,8 @@ If you don't have a printer, everything still works — check-ins proceed normal
 
 - **Printer**: Brother QL-820NWB (recommended) — about $170 on Amazon
   - Other compatible models: QL-800, QL-810W, QL-1100, QL-1110NWB
-- **Labels**: Brother DK-11202 shipping labels (62mm x 100mm) — about $15 for a roll of 300
-  - These are the white rectangular labels, not the continuous tape
+- **Labels**: Brother DK-2205 continuous roll (62mm wide) — about $15 per roll
+  - This is the continuous white tape, not die-cut labels
 - **Cable**: USB-A to USB-B cable (the square-shaped connector, like an older printer cable)
   - The QL-820NWB also supports Wi-Fi, but USB is more reliable for events
 
@@ -122,7 +124,7 @@ If you don't have a printer, everything still works — check-ins proceed normal
 1. **Plug the USB cable** from the printer into your Mac
    - If your Mac only has USB-C ports, you'll need a USB-C to USB-A adapter (or a USB-C to USB-B cable)
 2. **macOS may show a pop-up** asking to allow the accessory to connect — click **Allow**
-3. You do **not** need to install any printer drivers — the portal talks directly to the printer over USB
+3. You do **not** need to install any printer drivers or configure CUPS — the portal talks directly to the printer over USB using pyusb
 
 #### Verifying the Connection
 
@@ -144,10 +146,20 @@ The default setting is for the QL-820NWB. If you bought a different Brother QL m
    Common values: `QL-800`, `QL-810W`, `QL-820NWB`, `QL-1100`, `QL-1110NWB`
 3. If you're using different label sizes, also change:
    ```
-   LABEL_SIZE="62x100"
+   LABEL_SIZE="62red"
    ```
-   The `62x100` setting works with DK-11202 labels. For other labels, see the size printed on the label box (e.g. `62` for continuous 62mm tape, `29x90` for address labels)
+   The `62red` setting works with DK-2205 continuous rolls on the QL-820NWB (which requires two-color raster mode). For other printers without two-color support, use `62` for continuous 62mm tape, or `29x90` for address labels
 4. Save the file and restart the server
+
+#### Badge Format
+
+Badges print in **landscape orientation** (100mm wide × 62mm tall) on the continuous roll. Each badge includes:
+- Event logo (centered at top)
+- "Innovate Together" tagline and event name
+- Attendee name in large bold text (auto-sizes to fit)
+- Company and job title below the name
+
+The printer automatically cuts each badge after printing.
 
 #### Testing a Badge Print
 
@@ -164,7 +176,9 @@ The default setting is for the QL-820NWB. If you bought a different Brother QL m
 | "Printer: Not connected" | Unplug the USB cable, wait 5 seconds, plug it back in. Check that the printer is powered on. |
 | macOS asks about an accessory | Click **Allow** to let the printer connect |
 | Badge prints but is blank | The labels may be loaded upside down — open the cover and flip the roll |
-| Badge prints but is cut off | Check that `LABEL_SIZE` in `.env` matches your actual labels (should be `62x100` for DK-11202) |
+| Badge prints but is cut off | Check that `LABEL_SIZE` in `.env` matches your actual labels (should be `62red` for DK-2205 on the QL-820NWB) |
+| Printer says "Check the print data" | The raster format doesn't match the printer. Make sure `LABEL_SIZE=62red` in `.env` for the QL-820NWB |
+| "Access denied" error on second print | This should be fixed — if it recurs, unplug and re-plug the USB cable |
 | "Print failed" error in dashboard | Try the **Reprint** button. If it still fails, check that no label is jammed in the cutter |
 | Labels are jamming | Open the cover, gently pull out any stuck label, close the cover, and press the feed button |
 | Printer works but badges look small | Make sure `PRINTER_MODEL` in `.env` matches your actual printer model |
@@ -244,6 +258,7 @@ The admin dashboard is your command center during the event.
 - **Registered** — total number of guests in the system
 - **Checked In** — how many have checked in so far
 - **Remaining** — how many haven't checked in yet
+- Click any stat card to **filter** the guest table (e.g., click "Checked In" to show only checked-in guests). Click again to clear the filter.
 
 **Guest Table**
 - Shows every guest with their check-in status

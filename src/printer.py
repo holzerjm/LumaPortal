@@ -64,6 +64,12 @@ def print_badge(image: Image.Image) -> bool:
     from brother_ql.raster import BrotherQLRaster
     from brother_ql.conversion import convert
 
+    # Rotate landscape image (1182×696) → portrait (696×1182) for the printer.
+    # The roll is 696px wide; a 696×1182 image prints as 62mm×100mm.
+    # When peeled off the roll, it reads as landscape.
+    if image.width > image.height:
+        image = image.rotate(90, expand=True)
+
     # Generate raster instructions with two-color mode
     # The QL-820NWB requires red=True (two-color raster format) even for
     # black-only printing on DK-2205 rolls.
@@ -72,7 +78,7 @@ def print_badge(image: Image.Image) -> bool:
         qlr=qlr,
         images=[image],
         label=LABEL_SIZE,
-        rotate="auto",
+        rotate=0,
         threshold=70,
         dither=False,
         compress=False,
