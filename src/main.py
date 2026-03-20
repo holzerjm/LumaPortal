@@ -81,7 +81,9 @@ async def lifespan(app: FastAPI):
 
     # Start background tasks
     if LUMA_API_KEY:
-        _sync_task = asyncio.create_task(_background_sync())
+        # Note: check-in sync back to Luma is disabled — the Luma API
+        # does not support updating guest status (returns 400).
+        # _sync_task = asyncio.create_task(_background_sync())
         if SYNC_INTERVAL > 0:
             _fetch_task = asyncio.create_task(_background_fetch())
             logger.info(f"Auto-sync enabled: fetching guests every {SYNC_INTERVAL}s")

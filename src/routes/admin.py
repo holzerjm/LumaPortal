@@ -1,5 +1,7 @@
+import csv
 import io
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse
 
 from src import database as db
 from src.csv_import import parse_csv
@@ -111,6 +113,44 @@ async def sync_luma():
         return {"status": "ok", "synced": count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/export-csv")
+async def export_csv():
+    """Export all guests with check-in status as a CSV download."""
+    from src.config import EVENT_NAME
+
+    guests = await db.get_all_guests()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "Name", "Email", "Company", "Job Title",
+        "Registration Status", "Checked In", "Checked In At", "Checked In By",
+        "Badge Printed At",
+    ])
+    for g in guests:
+        writer.writerow([
+            g.name,
+            g.email or "",
+            g.company or "",
+            g.job_title or "",
+            g.approval_status or "",
+            "Yes" if g.checked_in_at else "No",
+            g.checked_in_at.strftime("%Y-%m-%d %H:%M:%S") if g.checked_in_at else "",
+            g.checked_in_by or "",
+            g.badge_printed_at.strftime("%Y-%m-%d %H:%M:%S") if g.badge_printed_at else "",
+        ])
+
+    output.seek(0)
+    safe_name = EVENT_NAME.replace(" ", "_").replace("/", "-")
+    filename = f"{safe_name}_checkin_report.csv"
+
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post("/clear-data")
