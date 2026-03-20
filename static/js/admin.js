@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStats();
     loadGuests();
     checkPrinter();
+    loadEventConfig();
     setupEventListeners();
 
     // Auto-refresh stats every 10s
@@ -52,6 +53,9 @@ function setupEventListeners() {
 
     // Clear data
     document.getElementById('btn-clear-data').addEventListener('click', clearAllData);
+
+    // Event API ID
+    document.getElementById('btn-save-event-id').addEventListener('click', saveEventId);
 
     // Table search
     document.getElementById('table-search').addEventListener('input', e => {
@@ -328,6 +332,71 @@ function toast(message, type = '') {
     el.textContent = message;
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 3000);
+}
+
+let _currentEventApiId = '';
+
+async function loadEventConfig() {
+    try {
+        const resp = await fetch('/admin/api/event-config');
+        const data = await resp.json();
+        _currentEventApiId = data.event_api_id || '';
+        document.getElementById('event-api-id').value = _currentEventApiId;
+    } catch (e) {
+        console.warn('Failed to load event config:', e);
+    }
+}
+
+async function saveEventId() {
+    const input = document.getElementById('event-api-id');
+    const newId = input.value.trim();
+
+    if (!newId) {
+        toast('Please enter an Event API ID', 'error');
+        return;
+    }
+
+    if (!/^evt-[A-Za-z0-9]+$/.test(newId)) {
+        toast('Invalid format. Must be evt-XXXXXXXXXXXXX', 'error');
+        return;
+    }
+
+    if (newId === _currentEventApiId) {
+        toast('No change', 'info');
+        return;
+    }
+
+    let archiveOld = false;
+    if (_currentEventApiId) {
+        archiveOld = confirm(
+            `You are switching from event "${_currentEventApiId}" to "${newId}".\n\n` +
+            `Would you like to archive the current check-in data?\n\n` +
+            `• Yes — saves current data as checkin.db-${_currentEventApiId} and starts fresh\n` +
+            `• No — keeps the current data for the new event`
+        );
+    }
+
+    try {
+        const resp = await fetch('/admin/api/event-config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_api_id: newId, archive_old: archiveOld }),
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            _currentEventApiId = newId;
+            const msg = archiveOld
+                ? `Event changed to ${newId}. Old data archived.`
+                : `Event changed to ${newId}.`;
+            toast(msg, 'success');
+            loadStats();
+            loadGuests();
+        } else {
+            toast('Failed: ' + (data.detail || 'Unknown error'), 'error');
+        }
+    } catch (e) {
+        toast('Error: ' + e.message, 'error');
+    }
 }
 
 function escapeHtml(text) {

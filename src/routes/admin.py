@@ -153,6 +153,72 @@ async def export_csv():
     )
 
 
+@router.get("/event-config")
+async def get_event_config():
+    """Return the current EVENT_API_ID."""
+    from src.config import EVENT_API_ID
+    return {"event_api_id": EVENT_API_ID}
+
+
+@router.post("/event-config")
+async def set_event_config(payload: dict):
+    """Update the EVENT_API_ID in the .env file, optionally archiving old data."""
+    import re
+    from src.config import BASE_DIR, EVENT_API_ID, DB_PATH
+
+    new_id = (payload.get("event_api_id") or "").strip()
+    archive_old = payload.get("archive_old", False)
+
+    if not new_id:
+        raise HTTPException(status_code=400, detail="EVENT_API_ID is required")
+
+    if not re.match(r"^evt-[A-Za-z0-9]+$", new_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid format. Must be evt-XXXXXXXXXXXXX",
+        )
+
+    if new_id == EVENT_API_ID:
+        return {"status": "ok", "message": "No change", "event_api_id": new_id}
+
+    # Archive old database if requested
+    old_id = EVENT_API_ID
+    if archive_old and old_id and DB_PATH.exists():
+        archive_path = DB_PATH.parent / f"checkin.db-{old_id}"
+        import shutil
+        shutil.move(str(DB_PATH), str(archive_path))
+        # Reinitialize a fresh database
+        await db.init_db()
+
+    # Update the .env file
+    env_path = BASE_DIR / ".env"
+    if env_path.exists():
+        env_content = env_path.read_text()
+        if "EVENT_API_ID=" in env_content:
+            env_content = re.sub(
+                r'EVENT_API_ID=.*',
+                f'EVENT_API_ID="{new_id}"',
+                env_content,
+            )
+        else:
+            env_content += f'\nEVENT_API_ID="{new_id}"\n'
+        env_path.write_text(env_content)
+    else:
+        env_path.write_text(f'EVENT_API_ID="{new_id}"\n')
+
+    # Update the in-memory config
+    import src.config
+    src.config.EVENT_API_ID = new_id
+
+    await refresh_guest_cache()
+    return {
+        "status": "ok",
+        "message": f"Event changed from {old_id} to {new_id}",
+        "event_api_id": new_id,
+        "archived": archive_old and bool(old_id),
+    }
+
+
 @router.post("/clear-data")
 async def clear_data():
     await db.clear_all_guests()

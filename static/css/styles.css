@@ -615,6 +615,46 @@ body.admin-body {
 .status-dot.red { background: var(--error); }
 .status-dot.gray { background: var(--text-muted); }
 
+/* Event ID config */
+.event-id-config {
+    margin-top: 8px;
+}
+
+.event-id-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.event-id-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.event-id-input {
+    font-size: 13px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text);
+    width: 180px;
+    font-family: monospace;
+}
+
+.btn-small {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+}
+
+.tooltip-icon {
+    cursor: help;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
 /* Stats Bar */
 .stats-bar {
     display: grid;
