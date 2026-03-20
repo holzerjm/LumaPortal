@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from src import database as db
+from src.config import ALLOWED_STATUSES
 from src.models import CheckInRequest, CheckInResponse, SearchResult
 from src.search import search_guests
 
@@ -12,7 +13,7 @@ _guest_cache: list = []
 
 async def refresh_guest_cache():
     global _guest_cache
-    _guest_cache = await db.get_all_guests()
+    _guest_cache = await db.get_all_guests(allowed_statuses=ALLOWED_STATUSES)
 
 
 @router.get("/search")
@@ -25,7 +26,7 @@ async def search(q: str = "") -> list[SearchResult]:
 @router.get("/guests")
 async def list_guests():
     """Return all guests for client-side Fuse.js search."""
-    guests = await db.get_all_guests()
+    guests = await db.get_all_guests(allowed_statuses=ALLOWED_STATUSES)
     return [
         {
             "api_id": g.api_id,
@@ -92,7 +93,7 @@ async def check_in(req: CheckInRequest) -> CheckInResponse:
 
 @router.get("/stats")
 async def stats():
-    s = await db.get_stats()
+    s = await db.get_stats(allowed_statuses=ALLOWED_STATUSES)
     from src.config import EVENT_NAME, LUMA_API_KEY, SYNC_INTERVAL
     s["event_name"] = EVENT_NAME
     s["auto_sync_enabled"] = bool(LUMA_API_KEY) and SYNC_INTERVAL > 0

@@ -255,18 +255,36 @@ Before the event, do a test run:
 The admin dashboard is your command center during the event.
 
 **Stats Bar (top)**
-- **Registered** — total number of guests in the system
+- **All Guests** — total number of guests in the system (all statuses)
+- **Approved** — guests whose registration has been approved
+- **Pending Approval** — guests still waiting for approval
 - **Checked In** — how many have checked in so far
-- **Remaining** — how many haven't checked in yet
-- Click any stat card to **filter** the guest table (e.g., click "Checked In" to show only checked-in guests). Click again to clear the filter.
+- **Remaining** — how many approved guests haven't checked in yet
+- Click any stat card to **filter** the guest table (e.g., click "Pending Approval" to see only pending guests). Click again to clear the filter.
 
 **Guest Table**
-- Shows every guest with their check-in status
-- Use the **Filter** box to search for a specific guest
+- Shows every guest with two status columns:
+  - **Registration** — the guest's approval status from Luma (Approved, Pending, or Declined)
+  - **Check-In** — whether the guest has checked in at the event
+- Use the **Filter** box to search for a specific guest by name, company, or email
 - Each row has action buttons:
   - **Check In** — manually check someone in from the dashboard
   - **Undo** — reverse a check-in (if someone was checked in by mistake)
   - **Reprint** — print another badge for someone already checked in
+
+**Controlling Who Can Check In**
+
+By default, only guests with **approved** status can check in via the check-in page. You can change this in the `.env` file:
+
+```
+# Only approved guests can check in (recommended):
+ALLOWED_STATUSES="approved"
+
+# Allow both approved and pending guests to check in:
+ALLOWED_STATUSES="approved,pending_approval"
+```
+
+The admin dashboard always shows all guests regardless of this setting, so you can still manually check in anyone from the dashboard.
 
 **Buttons**
 - **Upload CSV** — load or refresh the guest list

@@ -114,10 +114,17 @@ async def upsert_guests(guests: list[Guest]):
         await db.close()
 
 
-async def get_all_guests() -> list[Guest]:
+async def get_all_guests(allowed_statuses: list[str] | None = None) -> list[Guest]:
     db = await get_db()
     try:
-        cursor = await db.execute("SELECT * FROM guests ORDER BY name")
+        if allowed_statuses:
+            placeholders = ",".join("?" for _ in allowed_statuses)
+            cursor = await db.execute(
+                f"SELECT * FROM guests WHERE approval_status IN ({placeholders}) ORDER BY name",
+                allowed_statuses,
+            )
+        else:
+            cursor = await db.execute("SELECT * FROM guests ORDER BY name")
         rows = await cursor.fetchall()
         return [_row_to_guest(row) for row in rows]
     finally:
@@ -183,15 +190,28 @@ async def mark_badge_printed(api_id: str):
         await db.close()
 
 
-async def get_stats() -> dict:
+async def get_stats(allowed_statuses: list[str] | None = None) -> dict:
     db = await get_db()
     try:
-        cursor = await db.execute("SELECT COUNT(*) FROM guests")
-        total = (await cursor.fetchone())[0]
-        cursor = await db.execute(
-            "SELECT COUNT(*) FROM guests WHERE checked_in_at IS NOT NULL"
-        )
-        checked_in = (await cursor.fetchone())[0]
+        if allowed_statuses:
+            placeholders = ",".join("?" for _ in allowed_statuses)
+            where = f"WHERE approval_status IN ({placeholders})"
+            cursor = await db.execute(
+                f"SELECT COUNT(*) FROM guests {where}", allowed_statuses
+            )
+            total = (await cursor.fetchone())[0]
+            cursor = await db.execute(
+                f"SELECT COUNT(*) FROM guests {where} AND checked_in_at IS NOT NULL",
+                allowed_statuses,
+            )
+            checked_in = (await cursor.fetchone())[0]
+        else:
+            cursor = await db.execute("SELECT COUNT(*) FROM guests")
+            total = (await cursor.fetchone())[0]
+            cursor = await db.execute(
+                "SELECT COUNT(*) FROM guests WHERE checked_in_at IS NOT NULL"
+            )
+            checked_in = (await cursor.fetchone())[0]
         return {
             "total_guests": total,
             "checked_in": checked_in,

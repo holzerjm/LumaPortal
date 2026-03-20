@@ -25,8 +25,10 @@ See **[USER_GUIDE.md](USER_GUIDE.md)** for detailed setup and event-day instruct
 
 - Print the QR code from the admin dashboard and display it at the entrance
 - Attendees scan the QR code on their phone, type their name, and check in
-- Badges print automatically on the connected Brother QL printer
+- Badges print automatically in landscape format on the connected Brother QL printer
 - Staff can use the admin dashboard to force check-ins, undo, or reprint badges
+- The admin dashboard shows registration status (Approved / Pending / Declined) and check-in status for each guest, with clickable filters to view by status
+- Control which guests can self-check-in via the `ALLOWED_STATUSES` setting in `.env`
 
 ## Connecting a Printer
 

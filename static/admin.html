@@ -48,7 +48,15 @@
         <div class="stats-bar">
             <button class="stat-card stat-filter active" data-filter="all" onclick="setStatusFilter('all')">
                 <div class="stat-value" id="stat-total">0</div>
-                <div class="stat-label">Registered</div>
+                <div class="stat-label">All Guests</div>
+            </button>
+            <button class="stat-card stat-filter" data-filter="approved" onclick="setStatusFilter('approved')">
+                <div class="stat-value" id="stat-approved" style="color: var(--success);">0</div>
+                <div class="stat-label">Approved</div>
+            </button>
+            <button class="stat-card stat-filter" data-filter="pending_approval" onclick="setStatusFilter('pending_approval')">
+                <div class="stat-value" id="stat-pending" style="color: var(--gold);">0</div>
+                <div class="stat-label">Pending Approval</div>
             </button>
             <button class="stat-card stat-filter" data-filter="checked_in" onclick="setStatusFilter('checked_in')">
                 <div class="stat-value success" id="stat-checkedin">0</div>
@@ -97,7 +105,8 @@
                             <th>Name</th>
                             <th>Company</th>
                             <th>Title</th>
-                            <th>Status</th>
+                            <th>Registration</th>
+                            <th>Check-In</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -107,6 +116,6 @@
         </div>
     </div>
 
-    <script src="/static/js/admin.js"></script>
+    <script src="/static/js/admin.js?v=2"></script>
 </body>
 </html>

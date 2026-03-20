@@ -94,10 +94,18 @@ async function loadGuests() {
         const resp = await fetch('/admin/api/guests');
         allGuests = await resp.json();
         document.getElementById('table-count').textContent = allGuests.length;
+        updateRegistrationCounts();
         renderGuestTable(document.getElementById('table-search').value);
     } catch (e) {
         console.warn('Guest load failed:', e);
     }
+}
+
+function updateRegistrationCounts() {
+    const approved = allGuests.filter(g => g.approval_status === 'approved').length;
+    const pending = allGuests.filter(g => g.approval_status === 'pending_approval').length;
+    document.getElementById('stat-approved').textContent = approved;
+    document.getElementById('stat-pending').textContent = pending;
 }
 
 function setStatusFilter(filter) {
@@ -123,6 +131,10 @@ function renderGuestTable(filter = '') {
         filtered = filtered.filter(g => !!g.checked_in_at);
     } else if (activeStatusFilter === 'remaining') {
         filtered = filtered.filter(g => !g.checked_in_at);
+    } else if (activeStatusFilter === 'approved') {
+        filtered = filtered.filter(g => g.approval_status === 'approved');
+    } else if (activeStatusFilter === 'pending_approval') {
+        filtered = filtered.filter(g => g.approval_status === 'pending_approval');
     }
 
     // Apply text search filter
@@ -138,12 +150,27 @@ function renderGuestTable(filter = '') {
 
     tbody.innerHTML = filtered.map(g => {
         const isCheckedIn = !!g.checked_in_at;
-        const statusBadge = isCheckedIn
+
+        // Registration status badge
+        const approval = g.approval_status || 'unknown';
+        let regBadge;
+        if (approval === 'approved') {
+            regBadge = `<span class="status-badge approved">Approved</span>`;
+        } else if (approval === 'pending_approval') {
+            regBadge = `<span class="status-badge pending-approval">Pending</span>`;
+        } else if (approval === 'declined') {
+            regBadge = `<span class="status-badge declined">Declined</span>`;
+        } else {
+            regBadge = `<span class="status-badge">${escapeHtml(approval)}</span>`;
+        }
+
+        // Check-in status
+        const checkinBadge = isCheckedIn
             ? `<span class="status-badge checked">Checked In</span>`
-            : `<span class="status-badge pending">Not Yet</span>`;
+            : `<span class="status-badge not-checked-in">Not Yet</span>`;
 
         const checkinTime = isCheckedIn
-            ? new Date(g.checked_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            ? `<br><small>${new Date(g.checked_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>`
             : '';
 
         const actions = isCheckedIn
@@ -155,7 +182,8 @@ function renderGuestTable(filter = '') {
             <td><strong>${escapeHtml(g.name)}</strong><br><small>${escapeHtml(g.email || '')}</small></td>
             <td>${escapeHtml(g.company || '')}</td>
             <td>${escapeHtml(g.job_title || '')}</td>
-            <td>${statusBadge} ${checkinTime}</td>
+            <td>${regBadge}</td>
+            <td>${checkinBadge}${checkinTime}</td>
             <td>${actions}</td>
         </tr>`;
     }).join('');
