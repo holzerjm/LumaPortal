@@ -7,10 +7,32 @@
 # Move to the script's directory (wherever the project folder is)
 cd "$(dirname "$0")"
 
+PID_FILE=".server.pid"
+
+# Check if already running
+if [ -f "$PID_FILE" ]; then
+    OLD_PID=$(cat "$PID_FILE")
+    if kill -0 "$OLD_PID" 2>/dev/null; then
+        echo ""
+        echo "  ⚠️  Server is already running (PID $OLD_PID)"
+        echo ""
+        echo "  Admin dashboard: http://localhost:8000/admin"
+        echo ""
+        echo "  To stop it, double-click STOP.command"
+        echo "  or press Ctrl+C in the original Terminal window."
+        echo ""
+        echo "Press Enter to close..."
+        read
+        exit 0
+    else
+        rm -f "$PID_FILE"
+    fi
+fi
+
 echo ""
-echo "============================================"
-echo "  LumaPortal - Event Check-In Portal"
-echo "============================================"
+echo "╔════════════════════════════════════════════╗"
+echo "║     LumaPortal - Event Check-In Portal     ║"
+echo "╚════════════════════════════════════════════╝"
 echo ""
 
 # ---- Step 1: Check/install uv (Python package manager) ----
@@ -49,27 +71,41 @@ fi
 LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "localhost")
 
 echo ""
-echo "============================================"
-echo "  Server starting!"
-echo ""
-echo "  Check-in page:  http://${LOCAL_IP}:8000"
-echo "  Admin dashboard: http://${LOCAL_IP}:8000/admin"
-echo ""
-echo "  Other devices on the same Wi-Fi can"
-echo "  open the check-in page URL above."
-echo ""
-echo "  Press Ctrl+C to stop the server."
-echo "============================================"
+echo "╔════════════════════════════════════════════╗"
+echo "║  ✅ Server starting!                       ║"
+echo "║                                            ║"
+echo "║  Check-in page:                            ║"
+echo "║    http://${LOCAL_IP}:8000"
+echo "║                                            ║"
+echo "║  Admin dashboard:                          ║"
+echo "║    http://${LOCAL_IP}:8000/admin"
+echo "║                                            ║"
+echo "║  To stop: double-click STOP.command        ║"
+echo "║           or press Ctrl+C here             ║"
+echo "╚════════════════════════════════════════════╝"
 echo ""
 
 # ---- Step 5: Open the admin page in the default browser ----
 sleep 1
 open "http://localhost:8000/admin" &
 
-# ---- Step 6: Start the server ----
-uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
+# ---- Step 6: Clean up PID file on exit ----
+cleanup() {
+    rm -f "$PID_FILE"
+    echo ""
+    echo "  Server stopped."
+    echo ""
+}
+trap cleanup EXIT
+
+# ---- Step 7: Start the server and save PID ----
+uv run uvicorn src.main:app --host 0.0.0.0 --port 8000 &
+SERVER_PID=$!
+echo "$SERVER_PID" > "$PID_FILE"
+
+# Wait for the server process
+wait $SERVER_PID
 
 # If server stops, keep window open so user can see any errors
-echo ""
-echo "Server stopped. Press Enter to close this window..."
+echo "Press Enter to close this window..."
 read
