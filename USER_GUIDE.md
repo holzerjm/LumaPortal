@@ -183,6 +183,7 @@ The printer automatically cuts each badge after printing.
 | Labels are jamming | Open the cover, gently pull out any stuck label, close the cover, and press the feed button |
 | Printer works but badges look small | Make sure `PRINTER_MODEL` in `.env` matches your actual printer model |
 | Nothing happens at all | The badge is saved as a PNG in the `data/` folder — you can print it manually from any printer |
+| "Wrong roll type" error | The QL-820NWB has a hardware sensor that reads identification markings on the label roll. **You must use genuine Brother DK-2205 rolls** — third-party/compatible rolls lack these markings and will be rejected by the printer. This is a firmware-level check that cannot be bypassed through software. |
 
 #### No Printer? No Problem
 
