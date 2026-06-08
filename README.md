@@ -1,5 +1,10 @@
 # LumaPortal - Event Check-In & Badge Printing
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Made with Python](https://img.shields.io/badge/made%20with-Python-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![Luma](https://img.shields.io/badge/Luma-check--in-FF5C5C.svg)](https://lu.ma)
+[![Badge Printing](https://img.shields.io/badge/feature-badge%20printing-blue.svg)](#)
+
 ## Setup (one time)
 
 1. Download/copy this entire `LumaPortal` folder to your computer
