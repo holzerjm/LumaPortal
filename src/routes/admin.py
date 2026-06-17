@@ -72,6 +72,49 @@ async def force_checkin(api_id: str) -> CheckInResponse:
     )
 
 
+@router.post("/approve/{api_id}")
+async def approve_guest(api_id: str):
+    """Approve a single pending/waitlist guest in Luma."""
+    from src.luma_client import update_guest_status
+
+    guest = await db.get_guest(api_id)
+    if not guest:
+        raise HTTPException(status_code=404, detail="Guest not found")
+
+    try:
+        await update_guest_status(api_id, status="approved")
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Luma approval failed: {e}")
+
+    await db.set_approval_status(api_id, "approved")
+    await refresh_guest_cache()
+    return {"status": "ok", "name": guest.name}
+
+
+@router.post("/approve-pending")
+async def approve_pending():
+    """Bulk-approve every pending_approval and waitlist guest in Luma."""
+    from src.luma_client import approve_guests
+
+    guests = await db.get_all_guests(
+        allowed_statuses=["pending_approval", "waitlist"]
+    )
+    ids = [g.api_id for g in guests]
+    if not ids:
+        return {"status": "ok", "approved": 0, "failed": 0, "failures": []}
+
+    result = await approve_guests(ids)
+    for gid in result["approved"]:
+        await db.set_approval_status(gid, "approved")
+    await refresh_guest_cache()
+    return {
+        "status": "ok",
+        "approved": len(result["approved"]),
+        "failed": len(result["failed"]),
+        "failures": result["failed"],
+    }
+
+
 @router.post("/undo-checkin/{api_id}")
 async def undo_checkin(api_id: str):
     guest = await db.undo_check_in(api_id)

@@ -51,7 +51,7 @@ You can re-upload the CSV at any time to update the list (new registrations, etc
 
 ### 4. Set Up Luma API Integration (Optional)
 
-Instead of manually exporting and uploading CSV files, you can connect directly to the Luma API to pull your guest list automatically and sync check-ins back to Luma in real time.
+Instead of manually exporting and uploading CSV files, you can connect directly to the Luma API to pull your guest list automatically and approve pending/waitlist guests right from the portal.
 
 **Prerequisites:**
 - You need a **Luma Plus** subscription (the API is not available on free plans)
@@ -85,7 +85,8 @@ Your event's API ID is in the Luma URL for your event. It looks like `evt-XXXXXX
 - On startup, the portal automatically fetches the full guest list from Luma
 - **Auto-sync** runs in the background every 5 minutes (configurable via `SYNC_INTERVAL` in `.env`) to pick up new registrations — no manual action needed
 - You can also click **"Sync from Luma API"** on the admin dashboard at any time for an immediate refresh
-- When someone checks in, the portal syncs their check-in status back to Luma every 30 seconds
+- You can approve pending/waitlist guests from the dashboard — and those approvals **do** sync to Luma (the guest becomes "Going")
+- **Check-ins are tracked in the portal only.** Luma's API does not accept check-in updates, so portal check-ins will **not** appear on your Luma event page — use **Export CSV** for the attendance record
 - The admin dashboard shows the last sync time and auto-sync status
 - You can still upload a CSV as a backup — both data sources work together
 
@@ -314,7 +315,7 @@ Watch the stats bar on the admin dashboard. The numbers update automatically eve
 
 Your check-in data is stored in `data/checkin.db` inside the LumaPortal folder. The admin dashboard also shows who checked in and at what time.
 
-If you configured the Luma API key, check-in data is automatically synced back to Luma, so you can see it on your Luma event page too.
+Check-ins live in the portal, **not** in Luma — Luma's API has no way to accept check-in updates, so your Luma event page will not show them. To get the attendance record, use **Export CSV** on the admin dashboard (it includes each guest's check-in time and who checked them in). Note: guest *approvals* you make in the portal **do** appear in Luma.
 
 ### Preparing for the Next Event
 
@@ -385,7 +386,7 @@ Prevent this during the event:
 
 ### Wi-Fi is unreliable or drops out
 
-The system works offline after the initial guest list is loaded. Check-ins are saved locally. If you configured the Luma API, check-in data will sync back to Luma once the connection is restored.
+The system works offline after the initial guest list is loaded. Check-ins are saved locally in the portal (they stay local by design — Luma's API can't accept check-ins). Any guest approvals you make while offline are queued and pushed to Luma automatically once the connection is restored.
 
 ---
 

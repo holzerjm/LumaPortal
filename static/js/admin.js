@@ -45,6 +45,9 @@ function setupEventListeners() {
         else toast('Please drop a .csv file', 'error');
     });
 
+    // Bulk approve pending/waitlist
+    document.getElementById('btn-approve-pending').addEventListener('click', approveAllPending);
+
     // Luma sync
     document.getElementById('btn-sync-luma').addEventListener('click', syncLuma);
 
@@ -105,11 +108,26 @@ async function loadGuests() {
     }
 }
 
+function isPendingOrWaitlist(g) {
+    return g.approval_status === 'pending_approval' || g.approval_status === 'waitlist';
+}
+
 function updateRegistrationCounts() {
     const approved = allGuests.filter(g => g.approval_status === 'approved').length;
-    const pending = allGuests.filter(g => g.approval_status === 'pending_approval').length;
+    const pending = allGuests.filter(isPendingOrWaitlist).length;
     document.getElementById('stat-approved').textContent = approved;
     document.getElementById('stat-pending').textContent = pending;
+
+    // Show/label the bulk-approve button based on how many need approval.
+    const btn = document.getElementById('btn-approve-pending');
+    if (btn) {
+        if (pending > 0) {
+            btn.style.display = '';
+            btn.textContent = `Approve ${pending} Pending/Waitlist`;
+        } else {
+            btn.style.display = 'none';
+        }
+    }
 }
 
 function setStatusFilter(filter) {
@@ -138,7 +156,7 @@ function renderGuestTable(filter = '') {
     } else if (activeStatusFilter === 'approved') {
         filtered = filtered.filter(g => g.approval_status === 'approved');
     } else if (activeStatusFilter === 'pending_approval') {
-        filtered = filtered.filter(g => g.approval_status === 'pending_approval');
+        filtered = filtered.filter(isPendingOrWaitlist);
     }
 
     // Apply text search filter
@@ -162,6 +180,8 @@ function renderGuestTable(filter = '') {
             regBadge = `<span class="status-badge approved">Approved</span>`;
         } else if (approval === 'pending_approval') {
             regBadge = `<span class="status-badge pending-approval">Pending</span>`;
+        } else if (approval === 'waitlist') {
+            regBadge = `<span class="status-badge waitlist">Waitlist</span>`;
         } else if (approval === 'declined') {
             regBadge = `<span class="status-badge declined">Declined</span>`;
         } else {
@@ -177,10 +197,16 @@ function renderGuestTable(filter = '') {
             ? `<br><small>${new Date(g.checked_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>`
             : '';
 
-        const actions = isCheckedIn
-            ? `<button class="action-btn" onclick="undoCheckin('${g.api_id}')">Undo</button>
-               <button class="action-btn" onclick="reprintBadge('${g.api_id}')">Reprint</button>`
-            : `<button class="action-btn" onclick="forceCheckin('${g.api_id}')">Check In</button>`;
+        let actions;
+        if (isCheckedIn) {
+            actions = `<button class="action-btn" onclick="undoCheckin('${g.api_id}')">Undo</button>
+               <button class="action-btn" onclick="reprintBadge('${g.api_id}')">Reprint</button>`;
+        } else {
+            const approveBtn = isPendingOrWaitlist(g)
+                ? `<button class="action-btn" onclick="approveGuest('${g.api_id}')">Approve</button>`
+                : '';
+            actions = `${approveBtn}<button class="action-btn" onclick="forceCheckin('${g.api_id}')">Check In</button>`;
+        }
 
         return `<tr>
             <td><strong>${escapeHtml(g.name)}</strong><br><small>${escapeHtml(g.email || '')}</small></td>
@@ -268,6 +294,49 @@ async function forceCheckin(apiId) {
             loadGuests();
         } else {
             toast('Check-in failed: ' + data.message, 'error');
+        }
+    } catch (e) {
+        toast('Error: ' + e.message, 'error');
+    }
+}
+
+async function approveGuest(apiId) {
+    try {
+        const resp = await fetch(`/admin/api/approve/${apiId}`, { method: 'POST' });
+        const data = await resp.json();
+        if (resp.ok) {
+            toast(`Approved ${data.name}`, 'success');
+            loadStats();
+            loadGuests();
+        } else {
+            toast('Approve failed: ' + (data.detail || 'Unknown error'), 'error');
+        }
+    } catch (e) {
+        toast('Error: ' + e.message, 'error');
+    }
+}
+
+async function approveAllPending() {
+    const pending = allGuests.filter(isPendingOrWaitlist).length;
+    if (pending === 0) {
+        toast('No pending or waitlist guests to approve', 'info');
+        return;
+    }
+    if (!confirm(`Approve all ${pending} pending/waitlist guests in Luma?\n\nThey will be marked "Going" and emailed Luma's approval notice.`)) {
+        return;
+    }
+    toast(`Approving ${pending} guests in Luma...`);
+    try {
+        const resp = await fetch('/admin/api/approve-pending', { method: 'POST' });
+        const data = await resp.json();
+        if (resp.ok) {
+            let msg = `Approved ${data.approved} guest${data.approved === 1 ? '' : 's'}`;
+            if (data.failed) msg += `, ${data.failed} failed`;
+            toast(msg, data.failed ? 'error' : 'success');
+            loadStats();
+            loadGuests();
+        } else {
+            toast('Approve failed: ' + (data.detail || 'Unknown error'), 'error');
         }
     } catch (e) {
         toast('Error: ' + e.message, 'error');

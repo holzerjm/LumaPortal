@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from src import database as db
-from src.config import ALLOWED_STATUSES
+from src.config import ALLOWED_STATUSES, AUTO_APPROVE_ON_CHECKIN
 from src.models import CheckInRequest, CheckInResponse, SearchResult
 from src.search import search_guests
 
@@ -64,6 +64,22 @@ async def check_in(req: CheckInRequest) -> CheckInResponse:
             message=f"Already checked in at {guest.checked_in_at.strftime('%I:%M %p')}",
             checked_in_at=guest.checked_in_at,
         )
+
+    # Auto-approve pending/waitlist guests in Luma as they arrive (configurable).
+    # Best-effort: never block the local check-in on a Luma write — queue for retry
+    # if it fails (offline / rate limited).
+    if AUTO_APPROVE_ON_CHECKIN and guest.approval_status in ("pending_approval", "waitlist"):
+        from src.luma_client import update_guest_status
+
+        try:
+            await update_guest_status(req.api_id, status="approved")
+            await db.set_approval_status(req.api_id, "approved")
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(
+                f"Auto-approve failed for {req.api_id}, queued for retry: {e}"
+            )
+            await db.enqueue_approval(req.api_id)
 
     updated = await db.check_in_guest(req.api_id, checked_in_by="self")
     if not updated:
