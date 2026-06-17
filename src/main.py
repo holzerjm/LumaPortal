@@ -24,14 +24,14 @@ last_sync_at: datetime | None = None
 
 
 async def _background_sync():
-    """Background task to sync check-ins to Luma API every 30 seconds."""
-    from src.luma_client import sync_checkins
+    """Background task to drain queued guest approvals to Luma every 30 seconds."""
+    from src.luma_client import sync_pending_approvals
 
     while True:
         try:
-            await sync_checkins()
+            await sync_pending_approvals()
         except Exception as e:
-            logger.warning(f"Background sync error: {e}")
+            logger.warning(f"Background approval sync error: {e}")
         await asyncio.sleep(30)
 
 
@@ -53,7 +53,7 @@ async def _background_fetch():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _sync_task
+    global _sync_task, _fetch_task
 
     # Initialize database
     await db.init_db()
@@ -81,9 +81,10 @@ async def lifespan(app: FastAPI):
 
     # Start background tasks
     if LUMA_API_KEY:
-        # Note: check-in sync back to Luma is disabled — the Luma API
-        # does not support updating guest status (returns 400).
-        # _sync_task = asyncio.create_task(_background_sync())
+        # Drain queued guest approvals to Luma. (Check-in itself is NOT writable via
+        # the Luma API — only approval status is — so check-in stays local-only.)
+        _sync_task = asyncio.create_task(_background_sync())
+        logger.info("Approval sync enabled: draining queued approvals every 30s")
         if SYNC_INTERVAL > 0:
             _fetch_task = asyncio.create_task(_background_fetch())
             logger.info(f"Auto-sync enabled: fetching guests every {SYNC_INTERVAL}s")

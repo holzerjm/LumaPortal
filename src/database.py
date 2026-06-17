@@ -145,19 +145,43 @@ async def check_in_guest(api_id: str, checked_in_by: str = "self") -> Guest | No
     now = datetime.now(timezone.utc)
     db = await get_db()
     try:
+        # Check-in is local-only — Luma has no API to write check-in state, so we
+        # do NOT queue it for sync (the sync_queue is now used for approvals).
         await db.execute(
             "UPDATE guests SET checked_in_at = ?, checked_in_by = ? WHERE api_id = ?",
             (now.isoformat(), checked_in_by, api_id),
-        )
-        # Queue sync to Luma
-        await db.execute(
-            "INSERT INTO sync_queue (guest_api_id, action) VALUES (?, ?)",
-            (api_id, "check_in"),
         )
         await db.commit()
         cursor = await db.execute("SELECT * FROM guests WHERE api_id = ?", (api_id,))
         row = await cursor.fetchone()
         return _row_to_guest(row) if row else None
+    finally:
+        await db.close()
+
+
+async def set_approval_status(api_id: str, status: str) -> None:
+    """Update a guest's locally-cached approval_status (after writing it to Luma)."""
+    db = await get_db()
+    try:
+        await db.execute(
+            "UPDATE guests SET approval_status = ? WHERE api_id = ?",
+            (status, api_id),
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+
+async def enqueue_approval(api_id: str) -> None:
+    """Queue an approval to be retried against Luma (used when a door auto-approve
+    fails, e.g. offline or rate-limited)."""
+    db = await get_db()
+    try:
+        await db.execute(
+            "INSERT INTO sync_queue (guest_api_id, action) VALUES (?, ?)",
+            (api_id, "approve"),
+        )
+        await db.commit()
     finally:
         await db.close()
 

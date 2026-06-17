@@ -32,7 +32,7 @@ Then open:
 - **Frontend**: Vanilla HTML/CSS/JS with Fuse.js for client-side fuzzy search
 - **Badge rendering**: Pillow (300 DPI PNG for thermal labels)
 - **Printer**: Brother QL via `brother_ql` library (USB)
-- **Luma API**: httpx async client with background sync
+- **Luma API**: httpx async client — background guest-list fetch + approval write-back
 
 ## Key Files
 
@@ -50,8 +50,20 @@ Then open:
 
 ## Data Flow
 
-1. Load guests from CSV upload or Luma API → SQLite
+1. Load guests from CSV upload or Luma API → SQLite (includes approval_status: approved / pending_approval / waitlist)
 2. Attendee scans QR → opens check-in page → types name
 3. Fuse.js fuzzy search matches against cached guest list
-4. Attendee confirms → server marks checked in → generates badge PNG → prints
-5. Background task syncs check-in status back to Luma API every 30s
+4. Attendee confirms → (if pending/waitlist and AUTO_APPROVE_ON_CHECKIN, approve in Luma) → server marks checked in locally → generates badge PNG → prints
+5. Background task drains queued guest **approvals** to Luma every 30s
+
+## Approvals vs. check-in (important)
+
+The Luma public API has **no check-in write endpoint** — `update-guest-status` only
+accepts `approved | declined | pending_approval | waitlist`. So:
+
+- **Approvals DO sync to Luma.** Admin "Approve Pending/Waitlist" (bulk + per-row) and
+  door auto-approve call `POST /v1/events/guests/update-status` with `status="approved"`.
+- **Check-in is LOCAL-ONLY.** The portal is the source of truth for attendance; check-ins
+  are stored in `data/checkin.db` and never appear on the Luma dashboard. Use the admin
+  **Export CSV** for the attendance record. (The old check-in write-back was removed — it
+  always 400'd because `checked_in` is not a valid Luma status.)

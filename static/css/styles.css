@@ -845,6 +845,11 @@ tr:hover td {
     color: #f59e0b;
 }
 
+.status-badge.waitlist {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--info);
+}
+
 .status-badge.declined {
     background: rgba(239, 68, 68, 0.15);
     color: var(--error);

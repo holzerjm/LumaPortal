@@ -27,10 +27,30 @@ HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
 
 # Check-in
+# Which Luma registration statuses are eligible to be found + checked in.
+# Include pending_approval and waitlist so those guests can be approved/checked in
+# at the door (see AUTO_APPROVE_ON_CHECKIN).
 ALLOWED_STATUSES = [
     s.strip()
-    for s in os.getenv("ALLOWED_STATUSES", "approved,pending_approval").split(",")
+    for s in os.getenv(
+        "ALLOWED_STATUSES", "approved,pending_approval,waitlist"
+    ).split(",")
+    if s.strip()
 ]
+
+
+def _env_bool(name: str, default: bool) -> bool:
+    return os.getenv(name, str(default)).strip().lower() in ("1", "true", "yes", "on")
+
+
+# Approvals (writeback to Luma)
+# When a pending_approval/waitlist guest checks in via the portal, also approve
+# them in Luma ("Going"). Set false for an "approve first, then check in" workflow.
+AUTO_APPROVE_ON_CHECKIN = _env_bool("AUTO_APPROVE_ON_CHECKIN", True)
+# Whether Luma sends its standard approval email when we approve a guest.
+APPROVE_SEND_EMAIL = _env_bool("APPROVE_SEND_EMAIL", True)
+# Statuses the API can write (check-in is NOT writable — it has no status value).
+WRITABLE_STATUSES = {"approved", "declined", "pending_approval", "waitlist"}
 
 # Sync
 SYNC_INTERVAL = int(os.getenv("SYNC_INTERVAL", "300"))  # seconds between auto-fetches from Luma
